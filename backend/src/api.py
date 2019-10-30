@@ -18,6 +18,13 @@ CORS(app)
 '''
 # db_drop_and_create_all()
 
+# SEED SAMPLE DRINK
+# drink = Drink(
+#     title='matcha shake',
+#     recipe='[{"name": "milk", "color": "grey", "parts": 1},{"name": "matcha", "color": "green", "parts": 3}]'
+# )
+# Drink.insert(drink)
+
 ## ROUTES
 '''
 @TODO implement endpoint
@@ -27,6 +34,15 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks')
+def get_drinks():
+    drinks_results = Drink.query.all()
+    drinks = [drink.short() for drink in drinks_results]
+
+    return jsonify({
+        'success': True,
+        'drinks': drinks,
+    }), 200
 
 
 '''
@@ -37,7 +53,16 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks-detail')
+@requires_auth('get:drinks-detail')
+def get_drinks_detail(jwt):
+    drinks_results = Drink.query.all()
+    drinks = [drink.long() for drink in drinks_results]
 
+    return jsonify({
+        'success': True,
+        'drinks': drinks,
+    }), 200
 
 '''
 @TODO implement endpoint
