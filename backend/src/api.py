@@ -38,6 +38,7 @@ CORS(app)
 def get_drinks():
     try:
         drinks_results = Drink.query.all()
+        print('drinks_results')
         drinks = [drink.short() for drink in drinks_results]
 
         return jsonify({
@@ -173,35 +174,62 @@ def delete_drink(jwt, drink_id):
 
 
 ## Error Handling
-'''
-Example error handling for unprocessable entity
-'''
+# handle not found resources
+@app.errorhandler(404)
+def resource_not_found(error):
+    return jsonify({
+        "success": False,
+        "error": 404,
+        "message": "resource not found"
+    }), 404
+
+# handle unprocessable entities
 @app.errorhandler(422)
 def unprocessable(error):
     return jsonify({
-                    "success": False, 
-                    "error": 422,
-                    "message": "unprocessable"
-                    }), 422
+        "success": False, 
+        "error": 422,
+        "message": "unprocessable"
+    }), 422
 
-'''
-@TODO implement error handlers using the @app.errorhandler(error) decorator
-    each error handler should return (with approprate messages):
-             jsonify({
-                    "success": False, 
-                    "error": 404,
-                    "message": "resource not found"
-                    }), 404
 
-'''
-
-'''
-@TODO implement error handler for 404
-    error handler should conform to general task above 
-'''
+# handle internal server errors
+@app.errorhandler(500)
+def server_error(error):
+    return jsonify({
+        "success": False,
+        "error": 500,
+        "message": "Internal Server Error"
+    }), 500
 
 
 '''
 @TODO implement error handler for AuthError
     error handler should conform to general task above 
 '''
+# handle user inputs
+@app.errorhandler(400)
+def bad_request(error):
+    return jsonify({
+        "success": False,
+        "error": 400,
+        "message": "Bad Request, please check your inputs"
+    }), 400
+
+# handle unauthorized request errors
+@app.errorhandler(401)
+def unathorized(error):
+    return jsonify({
+        "success": False,
+        "error": 401,
+        "message": error.description,
+    }), 401
+
+# handle forbidden requests
+@app.errorhandler(403)
+def forbidden(error):
+    return jsonify({
+        "success": False,
+        "error": 403,
+        "message": "You are forbidden from accessing this resource",
+    }), 403
