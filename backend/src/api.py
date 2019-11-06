@@ -20,8 +20,8 @@ CORS(app)
 
 # SEED SAMPLE DRINK
 # drink = Drink(
-#     title='matcha shake',
-#     recipe='[{"name": "milk", "color": "grey", "parts": 1},{"name": "matcha", "color": "green", "parts": 3}]'
+#     title='chocolate milk',
+#     recipe='[{"name": "chocolate", "color": "brown", "parts": 1},{"name": "milk", "color": "cream", "parts": 3}]'
 # )
 # Drink.insert(drink)
 
@@ -36,13 +36,17 @@ CORS(app)
 '''
 @app.route('/drinks')
 def get_drinks():
-    drinks_results = Drink.query.all()
-    drinks = [drink.short() for drink in drinks_results]
+    try:
+        drinks_results = Drink.query.all()
+        drinks = [drink.short() for drink in drinks_results]
 
-    return jsonify({
-        'success': True,
-        'drinks': drinks,
-    }), 200
+        return jsonify({
+            'success': True,
+            'drinks': drinks,
+        }), 200
+        
+    except:
+        abort(500)
 
 
 '''
@@ -56,13 +60,17 @@ def get_drinks():
 @app.route('/drinks-detail')
 @requires_auth('get:drinks-detail')
 def get_drinks_detail(jwt):
-    drinks_results = Drink.query.all()
-    drinks = [drink.long() for drink in drinks_results]
+    try:
+        drinks_results = Drink.query.all()
+        drinks = [drink.long() for drink in drinks_results]
 
-    return jsonify({
-        'success': True,
-        'drinks': drinks,
-    }), 200
+        return jsonify({
+            'success': True,
+            'drinks': drinks,
+        }), 200
+        
+    except:
+        abort(500)
 
 '''
 @TODO implement endpoint
@@ -76,26 +84,20 @@ def get_drinks_detail(jwt):
 @app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
 def create_drink(jwt):
-    # try:
-    data = request.get_json()
-    title = data.get('title')
-    recipe_raw = data.get('recipe')
-    # title='matcha shake2',
-    # the ingredients blob - this stores a lazy json blob
-    # the required datatype is [{'color': string, 'name':string, 'parts':number}]
-    # recipe_raw='[{"name": "milk2", "color": "grey2", "parts": 2},{"name": "matcha2", "color": "green2", "parts": 4}]'
-    # recipe_raw={"name": "milk2", "color": "grey2", "parts": 2}
-    # recipe = json.dumps([recipe_raw])
-    recipe = json.dumps(recipe_raw)
-    print(recipe)
-    drink = Drink(title=title, recipe=recipe)
-    drink.insert()
-    return jsonify({
-        'success': True,
-        'drinks': drink.long(),
-    }), 200
-    # except Exception:
-    #     abort(422)
+    try:
+        data = request.get_json()
+        title = data.get('title')
+        recipe_raw = data.get('recipe')
+        recipe = json.dumps(recipe_raw)
+
+        drink = Drink(title=title, recipe=recipe)
+        drink.insert()
+        return jsonify({
+            'success': True,
+            'drinks': drink.long(),
+        }), 200
+    except:
+        abort(422)
 
 '''
 @TODO implement endpoint
@@ -108,6 +110,34 @@ def create_drink(jwt):
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<int:drink_id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
+def edit_drink(jwt, drink_id):
+    notFound = False
+    try:
+        drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+        if drink is None:
+            notFound = True
+    
+        else:
+            title = request.json.get('title')
+
+            if type(title) is not str or len(title) is 0:
+                abort(400)
+
+            drink.title = title
+            drink.update()
+            
+            return jsonify({
+                'success': True,
+                'drink': [drink.long()],
+            })
+    except:
+        abort(422)
+    finally:
+        if notFound is True:
+            abort(404)
+
 
 
 '''
@@ -123,17 +153,23 @@ def create_drink(jwt):
 @app.route('/drinks/<int:drink_id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
 def delete_drink(jwt, drink_id):
-    # try:
-    drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
-    if drink is None:
-        abort(404)
-    drink.delete()
-    return jsonify({
-        'success': True,
-        'delete': drink_id,
-    })
-    # except Exception:
-    #     abort(422)
+    notFound = False
+    try:
+        drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+        if drink is None:
+            notFound = True
+        else:
+            drink.delete()
+            return jsonify({
+                'success': True,
+                'delete': drink_id,
+            })
+    except:
+        abort(500)
+    finally:
+        if notFound is True:
+            abort(404)
+
 
 
 ## Error Handling
