@@ -18,7 +18,7 @@ CORS(app)
 '''
 # db_drop_and_create_all()
 
-# SEED SAMPLE DRINK
+# # SEED SAMPLE DRINK
 # drink = Drink(
 #     title='chocolate milk',
 #     recipe='[{"name": "chocolate", "color": "brown", "parts": 1},{"name": "milk", "color": "cream", "parts": 3}]'
@@ -38,7 +38,6 @@ CORS(app)
 def get_drinks():
     try:
         drinks_results = Drink.query.all()
-        print('drinks_results')
         drinks = [drink.short() for drink in drinks_results]
 
         return jsonify({
