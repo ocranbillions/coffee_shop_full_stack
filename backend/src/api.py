@@ -18,7 +18,7 @@ CORS(app)
 '''
 # db_drop_and_create_all()
 
-# SEED SAMPLE DRINK
+# # SEED SAMPLE DRINK
 # drink = Drink(
 #     title='chocolate milk',
 #     recipe='[{"name": "chocolate", "color": "brown", "parts": 1},{"name": "milk", "color": "cream", "parts": 3}]'
